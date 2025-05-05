@@ -60,7 +60,7 @@ public class UserRepository implements IUserRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Error finding user by email", e);
         }
-        return null;
+        return new User();
     }
 
     @Override
