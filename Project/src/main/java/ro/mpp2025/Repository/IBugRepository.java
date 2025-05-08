@@ -10,4 +10,5 @@ public interface IBugRepository {
     Bug findById(int id);
     Bug deleteBug(int id);
     List<Bug> findAll();
+    Bug update(Bug bug);
 }

@@ -22,9 +22,10 @@ public class UserRepository implements IUserRepository {
 
     @Override
     public void save(User user) {
+        // Role is assigned later by an admin, so we omit it here
         String sql = """
-            INSERT INTO users (name, email, password, role, activated)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO users (name, email, password, activated)
+            VALUES (?, ?, ?, ?)
             """;
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -32,8 +33,7 @@ public class UserRepository implements IUserRepository {
             ps.setString(1, user.getName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPassword());
-            ps.setString(4, user.getRole().name());
-            ps.setBoolean(5, user.isActivated());
+            ps.setBoolean(4, user.isActivated());
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -44,7 +44,7 @@ public class UserRepository implements IUserRepository {
     @Override
     public User findByEmail(String email) {
         String sql = """
-            SELECT name, email, password, role, activated
+            SELECT id, name, email, password, role, activated
               FROM users
              WHERE email = ?
             """;
@@ -55,21 +55,21 @@ public class UserRepository implements IUserRepository {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapUser(rs);
+                } else {
+                    return null;
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error finding user by email", e);
         }
-        return new User();
     }
 
     @Override
     public User deleteUser(String email) {
-        // PostgreSQL supports RETURNING, so we can delete and fetch the deleted row in one step
         String sql = """
             DELETE FROM users
               WHERE email = ?
-           RETURNING name, email, password, role, activated
+           RETURNING id, name, email, password, role, activated
             """;
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -89,7 +89,7 @@ public class UserRepository implements IUserRepository {
     @Override
     public User findById(int id) {
         String sql = """
-            SELECT name, email, password, role, activated
+            SELECT id, name, email, password, role, activated
               FROM users
              WHERE id = ?
             """;
@@ -111,7 +111,7 @@ public class UserRepository implements IUserRepository {
     @Override
     public List<User> findAll() {
         String sql = """
-            SELECT name, email, password, role, activated
+            SELECT id, name, email, password, role, activated
               FROM users
             """;
         List<User> users = new ArrayList<>();
@@ -128,13 +128,42 @@ public class UserRepository implements IUserRepository {
         return users;
     }
 
-    // Helper to map a ResultSet row to a User
+    @Override
+    public void assignRole(String email, Role role) {
+        String sql = """
+        UPDATE users
+           SET role = ?::role_enum,
+           activated = ?
+         WHERE email = ?
+        """;
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, role.name());
+            ps.setBoolean(2, true);
+            ps.setString(3, email);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new RuntimeException("User not found for email: " + email);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error assigning role to user", e);
+        }
+    }
+
+    // Helper to map a ResultSet row to a User, handling possible null role
     private User mapUser(ResultSet rs) throws SQLException {
         User user = new User();
+        user.setId(rs.getInt("id"));
         user.setName(       rs.getString("name")     );
         user.setEmail(      rs.getString("email")    );
         user.setPassword(   rs.getString("password") );
-        user.setRole(       Role.valueOf(rs.getString("role"))      );
+
+        String roleStr = rs.getString("role");
+        if (roleStr != null) {
+            user.setRole(Role.valueOf(roleStr));
+        }
+
         user.setActivated(  rs.getBoolean("activated") );
         return user;
     }

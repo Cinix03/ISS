@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ro.mpp2025.Controller.AdminHomeController"
+            prefWidth="800" prefHeight="450">
+
+    <!-- Top greeting -->
+    <top>
+        <Label fx:id="greetingLabel"
+               text="Hello, Admin"
+               style="-fx-font-size:24px; -fx-padding:10;" />
+    </top>
+
+    <!-- Center: two panels side-by-side -->
+    <center>
+        <HBox spacing="40" alignment="TOP_CENTER">
+            <!-- padding around the HBox -->
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Left: pending users -->
+            <VBox spacing="10" alignment="TOP_CENTER">
+                <Label text="Pending Users" style="-fx-font-size:18px;"/>
+                <ListView fx:id="pendingUsersList"
+                          prefWidth="300" prefHeight="300"/>
+                <HBox spacing="5" alignment="CENTER">
+                    <ComboBox fx:id="roleCombo"
+                              promptText="Select Role"/>
+                    <Button fx:id="assignRoleButton"
+                            text="Assign"
+                            style="-fx-background-color:black; -fx-text-fill:white;"/>
+                </HBox>
+            </VBox>
+
+            <!-- Right: all users -->
+            <VBox spacing="10" alignment="TOP_CENTER">
+                <Label text="All Users" style="-fx-font-size:18px;"/>
+                <ListView fx:id="allUsersList"
+                          prefWidth="300" prefHeight="300"/>
+                <Button fx:id="removeUserButton"
+                        text="Remove"
+                        style="-fx-background-color:black; -fx-text-fill:white;"/>
+            </VBox>
+        </HBox>
+    </center>
+
+</BorderPane>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ro.mpp2025.Controller.ProgrammerHomeController"
+            prefWidth="800" prefHeight="500">
+
+    <!-- Top greeting -->
+    <top>
+        <Label fx:id="greetingLabel"
+               style="-fx-font-size:24px; -fx-padding:10;" />
+    </top>
+
+    <center>
+        <HBox spacing="20" alignment="TOP_CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
+
+            <!-- Left: all bugs with status filter -->
+            <VBox spacing="10" alignment="TOP_CENTER">
+                <Label text="All Bugs" style="-fx-font-size:18px;"/>
+                <ComboBox fx:id="filterCombo" promptText="Filter by status"/>
+                <ListView fx:id="allBugsList" prefWidth="200" prefHeight="300"/>
+                <Button fx:id="assignButton"
+                        text="Take Bug"
+                        style="-fx-background-color:black; -fx-text-fill:white;"/>
+            </VBox>
+
+            <!-- Middle: my assigned bugs -->
+            <VBox spacing="10" alignment="TOP_CENTER">
+                <Label text="My Bugs" style="-fx-font-size:18px;"/>
+                <ListView fx:id="myBugsList" prefWidth="200" prefHeight="300"/>
+            </VBox>
+
+            <!-- Right: update status -->
+            <VBox spacing="10" alignment="TOP_CENTER">
+                <Label text="Update Status" style="-fx-font-size:18px;"/>
+                <ComboBox fx:id="statusCombo" promptText="New status"/>
+                <Button fx:id="updateStatusButton"
+                        text="Update"
+                        style="-fx-background-color:black; -fx-text-fill:white;"/>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

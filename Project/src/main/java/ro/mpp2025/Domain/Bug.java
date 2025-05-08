@@ -3,6 +3,7 @@ import lombok.Data;
 
 @Data
 public class Bug {
+    private int id;
     private String name;
     private String description;
     private Status status;

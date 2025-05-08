@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ro.mpp2025.Controller.TesterHomeController"
+            prefWidth="800" prefHeight="500">
+
+    <!-- Top greeting -->
+    <top>
+        <Label fx:id="greetingLabel"
+               style="-fx-font-size:24px; -fx-padding:10;" />
+    </top>
+
+    <center>
+        <HBox spacing="20" alignment="TOP_CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
+
+            <!-- Left: bugs list -->
+            <VBox spacing="10" alignment="TOP_CENTER">
+                <Label text="List Of Bugs:" style="-fx-font-size:18px;" />
+                <ListView fx:id="bugsList" prefWidth="300" prefHeight="400" />
+            </VBox>
+
+            <!-- Right: new bug form -->
+            <VBox spacing="10" alignment="TOP_LEFT">
+                <Label text="Name (*)" />
+                <TextField fx:id="nameField" promptText="Bug Name" prefWidth="400" />
+
+                <Label text="Description + steps for reproduce (*)" />
+                <TextArea fx:id="descriptionField" promptText="Description+steps" prefWidth="400" prefHeight="120" />
+
+                <Label text="Assigned To" />
+                <ComboBox fx:id="assignCombo" prefWidth="400" />
+
+                <Button fx:id="addBugButton"
+                        text="Add Bug"
+                        prefWidth="200"
+                        style="-fx-background-color:black; -fx-text-fill:white; -fx-padding:10;" />
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

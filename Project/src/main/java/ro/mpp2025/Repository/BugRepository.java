@@ -10,7 +10,7 @@ import java.util.List;
 public class BugRepository implements IBugRepository {
     private static final String URL = "jdbc:postgresql://localhost:5432/BugTrackingSystem";
     private static final String USERNAME = "postgres";
-    private static final String PASSWORD = "your_password_here";
+    private static final String PASSWORD = "random";
 
     private final IUserRepository userRepo;
 
@@ -30,7 +30,7 @@ public class BugRepository implements IBugRepository {
     public void save(Bug bug) {
         String sql = """
             INSERT INTO bugs(name, description, status, reported_by, assigned_to)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?::status_enum, ?, ?)
             """;
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -38,9 +38,9 @@ public class BugRepository implements IBugRepository {
             ps.setString(1, bug.getName());
             ps.setString(2, bug.getDescription());
             ps.setString(3, bug.getStatus().name());
-            ps.setInt(4, getUserIdByEmail(bug.getReportedBy().getEmail()));
+            ps.setInt(4, bug.getReportedBy().getId());
             if (bug.getAssignedTo() != null) {
-                ps.setInt(5, getUserIdByEmail(bug.getAssignedTo().getEmail()));
+                ps.setInt(5, bug.getAssignedTo().getId());
             } else {
                 ps.setNull(5, Types.INTEGER);
             }
@@ -116,6 +116,44 @@ public class BugRepository implements IBugRepository {
         return bugs;
     }
 
+    @Override
+    public Bug update(Bug bug) {
+        String sql = """
+        UPDATE bugs
+           SET name        = ?,
+               description = ?,
+               status      = ?::status_enum,
+               reported_by = ?,
+               assigned_to = ?
+         WHERE id = ?
+      RETURNING id, name, description, status, reported_by, assigned_to
+        """;
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, bug.getName());
+            ps.setString(2, bug.getDescription());
+            ps.setString(3, bug.getStatus().name());
+            ps.setInt(4, getUserIdByEmail(bug.getReportedBy().getEmail()));
+            if (bug.getAssignedTo() != null) {
+                ps.setInt(5, getUserIdByEmail(bug.getAssignedTo().getEmail()));
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+            ps.setInt(6, /* the existing bug id */ bug.getId());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapBug(rs);
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating bug", e);
+        }
+    }
+
+
     // -- Helpers --
 
     private int getUserIdByEmail(String email) throws SQLException {
@@ -136,6 +174,7 @@ public class BugRepository implements IBugRepository {
 
     private Bug mapBug(ResultSet rs) throws SQLException {
         Bug bug = new Bug();
+        bug.setId(rs.getInt("id"));
         bug.setName(rs.getString("name"));
         bug.setDescription(rs.getString("description"));
         bug.setStatus(Status.valueOf(rs.getString("status")));
