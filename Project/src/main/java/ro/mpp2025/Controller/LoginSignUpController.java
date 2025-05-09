@@ -156,6 +156,12 @@ public class LoginSignUpController {
         } catch (RuntimeException ex) {
             // show error to user
             System.err.println(ex.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Credentiale gresite.");
+            alert.setHeaderText(null);
+            alert.setContentText("Credentiale gresite.");
+            alert.showAndWait();
+            return;  // oprește flow-ul de login
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
