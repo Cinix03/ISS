@@ -9,10 +9,10 @@
               AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
             <Label fx:id="titleLabel" text="Create new Account" style="-fx-font-size:34px; -fx-font-weight:bold;" />
             <Hyperlink fx:id="switchLink" text="Already Registered? Login" />
-            <TextField fx:id="nameField" promptText="Name" maxWidth="300" style="-fx-padding: 10 20"/>
-            <TextField fx:id="emailField" promptText="Email" maxWidth="300" style="-fx-padding: 10 20"/>
-            <PasswordField fx:id="passwordField" promptText="Password" maxWidth="300" style="-fx-padding: 10 20"/>
-            <Button fx:id="actionButton" text="Sign up" prefWidth="150" style="-fx-background-color: black; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 10 20; -fx-pref-height: 50px; -fx-pref-width: 200;"/>
+            <TextField fx:id="nameField" promptText="Name" maxWidth="300" style="-fx-padding: 10 20; -fx-font-size: 20px;"/>
+            <TextField fx:id="emailField" promptText="Email" maxWidth="300" style="-fx-padding: 10 20; -fx-font-size: 20px;"/>
+            <PasswordField fx:id="passwordField" promptText="Password" maxWidth="300" style="-fx-padding: 10 20; -fx-font-size: 20px;"/>
+            <Button fx:id="actionButton" text="Sign up" prefWidth="150" style="-fx-background-color: black; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 10 20; -fx-pref-height: 50px; -fx-pref-width: 200; -fx-font-size: 20px"/>
         </VBox>
     </children>
 </AnchorPane>
