@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.util.StringConverter;
 import ro.mpp2025.Domain.Bug;
 import ro.mpp2025.Domain.Status;
 import ro.mpp2025.Domain.User;
@@ -46,13 +47,24 @@ public class ProgrammerHomeController implements Subject {
     @FXML
     private void initialize() {
         // set up filter ComboBox (for allBugsList)
-        filterCombo.setItems(FXCollections.observableArrayList(Status.values()));
+        filterCombo.getItems().add(null);
+        filterCombo.getItems().addAll(FXCollections.observableArrayList(Status.values()));
+        filterCombo.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Status status) {
+                return status == null ? "All" : status.name();
+            }
+            @Override
+            public Status fromString(String string) {
+                if ("All".equals(string)) return null;
+                return Status.valueOf(string);
+            }
+        });
+
         filterCombo.setOnAction(e -> applyFilter());
 
-        // set up status ComboBox (for updating status)
         statusCombo.setItems(FXCollections.observableArrayList(Status.values()));
 
-        // cellFactory for coloring status circles in both lists
         allBugsList.setCellFactory(list -> new BugCell());
         myBugsList .setCellFactory(list -> new BugCell());
 
