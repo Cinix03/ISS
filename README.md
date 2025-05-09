@@ -12,7 +12,7 @@
   - Crearea paginii de bug-tracking pentru testeri
   - Crearea paginii de listare a bug-urilor pentru dezvoltatori
   - Crearea paginii de gestionare a utilizatorilor pentru admin
-- Testarea initiala a functionalitatilor principale
+
 
 ## Iteratia 2 - Rafinari si Optimizari
 - Imbunatatirea interfetei utilizatorului
@@ -27,4 +27,5 @@
 ### Creearea + Popularea Bazei de Date
 - Crearea scripturilor de initializare si populare cu date de test
 - Integrarea unor date de test mai variate si complexe
+- Testarea initiala a functionalitatilor principale
 
