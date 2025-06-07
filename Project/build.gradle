@@ -75,7 +75,17 @@ dependencies {
 
     // Testare Spring Boot + JUnit
     testImplementation 'com.h2database:h2'
+    // Spring Boot Test (adaugă JUnit 5, Mockito, AssertJ, etc.)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // BOM pentru JUnit Jupiter 5.10.0 – aliniază toate modulele JUnit la acea versiune
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    // artefactul „junit-jupiter” aduce api+engine+params+etc.
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Dacă vrei ultima versiune de Mockito în afară de cea din starter
+    testImplementation 'org.mockito:mockito-core:5.4.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
 }
 
 test {
