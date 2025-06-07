@@ -1,0 +1,83 @@
+plugins {
+    // Spring Boot & Dependency Management
+    id 'org.springframework.boot' version '3.1.0'
+    id 'io.spring.dependency-management' version '1.1.0'
+
+    // Java, Application și JavaFX
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+}
+
+group = 'ro.mpp2025'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+javafx {
+    version = "21"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+application {
+    // Main class-ul Spring Boot (clasă cu @SpringBootApplication)
+    mainClass = 'ro.mpp2025.MainApplication'
+}
+import org.gradle.api.tasks.JavaExec
+
+tasks.named('bootRun', JavaExec).configure {
+    // asigură-te că foloseşti classpath-ul complet
+    classpath = sourceSets.main.runtimeClasspath
+
+    // spune JVM-ului unde sunt JAR-urile JavaFX şi ce module să încarce
+    jvmArgs = [
+            "--module-path", configurations.runtimeClasspath.asPath,
+            "--add-modules", "javafx.controls,javafx.fxml"
+    ]
+
+    // (opţional) dacă nu vrei să pornească server web
+    systemProperties = [
+            "spring.main.web-application-type": "none"
+    ]
+
+    // overridează main-ul, dacă e nevoie (ar trebui să fie MainApplication)
+    main = application.mainClass.get()
+}
+
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot core + web (dacă ai nevoie de REST/endpoints)
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    // JPA + Hibernate
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Driver Postgres
+    runtimeOnly 'org.postgresql:postgresql:42.5.4'
+
+    // JavaFX
+    implementation "org.openjfx:javafx-controls:21"
+    implementation "org.openjfx:javafx-fxml:21"
+
+    // Lombok
+    compileOnly    "org.projectlombok:lombok:1.18.34"
+    annotationProcessor "org.projectlombok:lombok:1.18.34"
+    testCompileOnly    "org.projectlombok:lombok:1.18.34"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.34"
+
+    // Testare Spring Boot + JUnit
+    testImplementation 'com.h2database:h2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
+}
