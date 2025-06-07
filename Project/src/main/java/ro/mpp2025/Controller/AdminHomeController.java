@@ -4,11 +4,13 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 import ro.mpp2025.Domain.Role;
 import ro.mpp2025.Domain.User;
 import ro.mpp2025.Service.BugService;
 import ro.mpp2025.Service.UserService;
 
+@Component
 public class AdminHomeController {
 
     @FXML private Label greetingLabel;

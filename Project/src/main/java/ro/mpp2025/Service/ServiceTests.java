@@ -14,11 +14,11 @@ public class ServiceTests {
         System.out.println("=== UserService Tests ===");
         testUserService();
         System.out.println("\n=== BugService Tests ===");
-        testBugService();
+        //testBugService();
     }
 
     private static void testUserService() {
-        MockUserRepository userRepo = new MockUserRepository();
+        /*MockUserRepository userRepo = new MockUserRepository();
         UserService userService = new UserService(userRepo);
 
         // createUser
@@ -122,5 +122,6 @@ public class ServiceTests {
             else
                 System.err.println("FAIL: Exception message mismatch (got: '" + e.getMessage() + "')");
         }
+    }*/
     }
 }

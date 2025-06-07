@@ -7,6 +7,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import org.hibernate.annotations.Comment;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ro.mpp2025.Domain.User;
 import ro.mpp2025.Domain.Role;
 import ro.mpp2025.Service.BugService;
@@ -15,6 +18,7 @@ import ro.mpp2025.Service.UserService;
 import java.io.IOException;
 import java.net.URL;
 
+@Component
 public class LoginSignUpController {
 
     @FXML private Label titleLabel;
@@ -24,12 +28,19 @@ public class LoginSignUpController {
     @FXML private PasswordField passwordField;
     @FXML private Button actionButton;
 
+    @Autowired
     private UserService userService;
+    @Autowired
     private BugService bugService;
     private boolean isLoginMode = false;
 
     public LoginSignUpController() {
         // You might inject UserService via manual DI
+    }
+    // Constructor injection - Spring va injecta automat serviciile
+    public LoginSignUpController(UserService userService, BugService bugService) {
+        this.userService = userService;
+        this.bugService = bugService;
     }
 
     public void setServices(UserService us, BugService bs){

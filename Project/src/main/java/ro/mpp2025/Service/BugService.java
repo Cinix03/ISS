@@ -1,58 +1,53 @@
 package ro.mpp2025.Service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ro.mpp2025.Domain.Bug;
 import ro.mpp2025.Domain.Status;
 import ro.mpp2025.Domain.User;
 import ro.mpp2025.Domain.Role;
-import ro.mpp2025.Repository.IBugRepository;
+import ro.mpp2025.Repository.BugRepoNew;
 import ro.mpp2025.Utils.Observer;
 import ro.mpp2025.Utils.Subject;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+@Service
 public class BugService implements Observer {
-    private final IBugRepository bugRepository;
-    private ArrayList<Subject> subjects;
+    private final BugRepoNew bugRepository;
+    private final List<Subject> subjects = new ArrayList<>();
 
-    public BugService(IBugRepository bugRepository) {
+    public BugService(BugRepoNew bugRepository) {
         this.bugRepository = bugRepository;
-        subjects = new ArrayList<>();
     }
 
-    /**
-     * Creates a new bug with validation and sets initial status.
-     */
+    /** Creează un bug nou cu validări și setează statusul inițial */
+    @Transactional
     public Bug createBug(Bug bug) {
-        try {
-            validateNewBug(bug);
-            bugRepository.save(bug);
-            notification();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bug;
+        validateNewBug(bug);
+        Bug saved = bugRepository.save(bug);
+        notification();
+        return saved;
     }
 
-    /**
-     * Retrieves a bug by its ID.
-     */
+    /** Returnează bug-ul după ID sau null */
+    @Transactional(readOnly = true)
     public Bug getBug(int id) {
-        return bugRepository.findById(id);
+        return bugRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Retrieves all bugs in the system.
-     */
+    /** Returnează lista tuturor bug-urilor */
+    @Transactional(readOnly = true)
     public List<Bug> getAllBugs() {
         return bugRepository.findAll();
     }
 
-    /**
-     * Deletes a bug by its ID. Only admins can delete.
-     */
+    /** Șterge bug-ul dacă actorul este Admin */
+    @Transactional
     public Bug deleteBug(int id, User actor) {
         if (actor.getRole() != Role.Admin) {
             throw new RuntimeException("Only admins can delete bugs");
@@ -61,52 +56,55 @@ public class BugService implements Observer {
     }
 
     /**
-     * Assigns a bug to a user. Only Admins or Programmers can assign.
+     * Atribuie bug-ul unui utilizator.
+     * Doar Testeri sau Programatori pot atribui.
      */
+    @Transactional
     public Bug assignBug(int id, User assigner, User assignee) {
         if (assigner.getRole() != Role.Tester && assignee.getRole() != Role.Programmer) {
             throw new RuntimeException("Only Programmer can assign a bug");
         }
-        Bug bug = bugRepository.findById(id);
-        if (bug == null) {
-            throw new RuntimeException("Bug not found");
+
+        Bug bug = bugRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bug not found"));
+
+        if (bug.getStatus() == Status.Finished) {
+            throw new RuntimeException("Bug is already finished");
         }
-        if(bug.getStatus()==Status.Finished)
-        {
-            throw new RuntimeException("Bug is finished");
-        }
-        if(assigner.getRole() == Role.Programmer) {
+        // dacă cel care atribuie e programator, îl pune în lucru
+        if (assigner.getRole() == Role.Programmer) {
             bug.setStatus(Status.InProgress);
         }
         bug.setAssignedTo(assignee);
-        bugRepository.update(bug);
+        Bug updated = bugRepository.save(bug);
         notification();
-        return bug;
+        return updated;
     }
 
     /**
-     * Changes status of a bug with role-based permission and valid transition checks.
+     * Schimbă statusul unui bug cu verificări de permisiuni și tranziții
      */
+    @Transactional
     public Bug changeStatus(int id, User actor, Status newStatus) {
-        Bug bug = bugRepository.findById(id);
-        if (bug == null) {
-            throw new RuntimeException("Bug not found");
-        }
+        Bug bug = bugRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bug not found"));
+
         if (!canChangeStatus(actor, bug)) {
             throw new RuntimeException("You do not have permission to change status");
         }
-        if(newStatus == Status.Refused)
-        {
+        if (newStatus == Status.Refused) {
             bug.setAssignedTo(null);
         }
         validateStatusTransition(bug.getStatus(), newStatus);
+
         bug.setStatus(newStatus);
-        bugRepository.update(bug);
+        Bug updated = bugRepository.save(bug);
         notification();
-        return bug;
+        return updated;
     }
 
-    // -- Validation Helpers --
+    // --- Helpers ---
+
     private void validateNewBug(Bug bug) {
         if (bug.getName() == null || bug.getName().isBlank()) {
             throw new RuntimeException("Bug name is required");
@@ -117,32 +115,29 @@ public class BugService implements Observer {
         if (bug.getReportedBy() == null || !bug.getReportedBy().isActivated()) {
             throw new RuntimeException("Reporting user must be activated");
         }
-        // Set initial status if not already set
         bug.setStatus(Status.Pending);
     }
 
     private boolean canChangeStatus(User actor, Bug bug) {
-        // Admins or assigned user can change status
         return actor.getRole() == Role.Admin || actor.equals(bug.getAssignedTo());
     }
 
     private void validateStatusTransition(Status oldStatus, Status newStatus) {
         Set<Status> allowed = switch (oldStatus) {
-            case Pending -> EnumSet.of(Status.InProgress, Status.Refused);
-            case InProgress -> EnumSet.of(Status.Finished, Status.Refused);
-            case Refused -> EnumSet.of(Status.Refused);
-            default -> EnumSet.noneOf(Status.class);
+            case Pending     -> EnumSet.of(Status.InProgress, Status.Refused);
+            case InProgress  -> EnumSet.of(Status.Finished, Status.Refused);
+            case Refused     -> EnumSet.of(Status.Refused);
+            default          -> EnumSet.noneOf(Status.class);
         };
         if (!allowed.contains(newStatus)) {
-            throw new RuntimeException("Invalid status transition from " + oldStatus + " to " + newStatus);
+            throw new RuntimeException(
+                    "Invalid status transition from " + oldStatus + " to " + newStatus);
         }
     }
 
     @Override
     public void notification() {
-        for(Subject subject : subjects) {
-            subject.update();
-        }
+        subjects.forEach(Subject::update);
     }
 
     @Override

@@ -8,6 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.StringConverter;
+import org.springframework.stereotype.Component;
 import ro.mpp2025.Domain.Bug;
 import ro.mpp2025.Domain.Status;
 import ro.mpp2025.Domain.User;
@@ -15,6 +16,7 @@ import ro.mpp2025.Service.BugService;
 import ro.mpp2025.Service.UserService;
 import ro.mpp2025.Utils.Subject;
 
+@Component
 public class ProgrammerHomeController implements Subject {
 
     @FXML private Label greetingLabel;

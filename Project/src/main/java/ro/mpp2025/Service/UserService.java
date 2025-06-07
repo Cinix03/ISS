@@ -1,63 +1,73 @@
 package ro.mpp2025.Service;
 
-import ro.mpp2025.Domain.Role;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ro.mpp2025.Domain.User;
-import ro.mpp2025.Repository.IUserRepository;
+import ro.mpp2025.Domain.Role;
+import ro.mpp2025.Repository.UserRepoNew;
 import ro.mpp2025.Utils.Observer;
 import ro.mpp2025.Utils.Subject;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class UserService implements Observer {
-    private final IUserRepository userRepository;
-    private ArrayList<Subject> observants;
-    public UserService(IUserRepository userRepository) {
+    private final UserRepoNew userRepository;
+    private final List<Subject> observants = new ArrayList<>();
+
+    public UserService(UserRepoNew userRepository) {
         this.userRepository = userRepository;
-        observants = new ArrayList<>();
     }
 
+    /** Returnează user-ul după email sau null */
+    @Transactional(readOnly = true)
     public User getUser(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).orElse(null);
     }
 
+    /** Autentifică user-ul după email și parolă */
+    @Transactional(readOnly = true)
     public User login(String email, String password) {
-        User user = userRepository.findByEmail(email);
-        if (user.getPassword().equals(password)) {
-            return user;
+        User user = getUser(email);
+        if (user == null) {
+            throw new RuntimeException("User not found");
         }
-        else
+        if (!user.getPassword().equals(password)) {
             throw new RuntimeException("Wrong password");
-    }
-
-    public User createUser(User user) throws RuntimeException {
-        try {
-            userRepository.save(user);
-            notification();
-        }catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error creating user");
         }
         return user;
     }
 
+    /** Creează un user nou cu notificare */
+    @Transactional
+    public User createUser(User user) {
+        User saved = userRepository.save(user);
+        notification();
+        return saved;
+    }
+
+    /** Returnează toți utilizatorii */
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
+    /** Atribuie rol și activează contul */
+    @Transactional
     public void assignRole(User user, Role role) {
         userRepository.assignRole(user.getEmail(), role);
     }
 
-    public void deleteUser(String user) {
-        userRepository.deleteUser(user);
+    /** Șterge user-ul după email și returnează instanța ștearsă */
+    @Transactional
+    public User deleteUser(String email) {
+        return userRepository.deleteUser(email);
     }
 
     @Override
     public void notification() {
-        for (Subject subject : observants) {
-            subject.update();
-        }
+        observants.forEach(Subject::update);
     }
 
     @Override
